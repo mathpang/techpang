@@ -198,7 +198,33 @@ const bigNumber = useMemo(() => factorial(500), []);
 
 ## 이벤트 핸들러도 함수라는 것을 잊지 말자.
 
-작성중...
+```jsx
+<div onClick={() => alert("클릭하셨네요?")} />
+```
+
+`div` 컴포넌트를 포함한 DOM 컴포넌트의 대부분은 이벤트 핸들러를 위와 같은 형식처럼 함수로 작성합니다.
+그런데 `react-dom` 내부적으로도 저 함수의 변화를 리렌더링할 때마다 감지하고 만약 변했다면 이전에 있던 이벤트 핸들러를 unsubscribe하고 새로운 함수를 다시 subscribe합니다.
+위의 예시에서는 함수의 실제 로직은 변하지 않지만, 단지 다시 렌더링 될 때 함수가 다시 생성된다는 이유로 비교 연산을 했을 떄 거짓을 결과로 갖습니다.
+이러한 불필요한 연산을 줄이기 위해 `useCallback`이 필요합니다.
+
+```jsx
+const onClick = useCallback(() => alert("클릭하셨네요?"), []);
+return <div onClick={onClick} />;
+```
+
+만약 함수안에서 사용하는 변수가 있다면 아래의 코드처럼 그 변수들이 변했을 때만 함수를 새로 생성할 수 있습니다.
+
+```jsx
+const [i, setI] = useState(0);
+const onClick = useCallback(() => {
+  alert(i + "번 클릭하셨네요?");
+
+  // setI는 useState의 반환값 중 하나인데,
+  // 이 함수는 변하지 않기 때문에 배열에 넣지 않아도 된다.
+}, [i]);
+
+return <div onClick={onClick} />;
+```
 
 ### 참고자료
 
