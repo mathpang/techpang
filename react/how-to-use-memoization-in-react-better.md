@@ -163,9 +163,40 @@ const cardInfo = useMemo(
 
 ## 과도한 메모이제이션은 해롭다.
 
-작성중...
+아래와 같이 `useMemo`를 활용했다고 가정해보겠습니다.
 
-## 이벤트 핸들러에도 메모이제이션이 필요하다.
+```js
+const dataExists = useMemo(() => {
+  return !loading && data.length != 0;
+}, [loading, data.length]);
+```
+
+`!loading && data.length != 0;`와 같은 간단한 연산에 `useMemo`를 사용하였다.
+게다가 결과값은 `true` 혹은 `false`여서 얕은 엄격한 비교의 특징을 고려할 필요도 없다.
+`useMemo`는 이전의 값을 저장하고, 두번째 인자 배열의 값을 비교하는 등 여러 작업을 통해 메모이제이션을 한다.
+이 과정에서도 연산 리소스가 필요한데, 저렇게 간단한 구문을 메모이징 하는 것은
+의미도 적을 뿐더러 `useMemo`를 쓰기 위한 리소스가 불필요하게 추가로 소요된다.
+결과적으로, 코드를 이해하는 데 난해해지고 성능은 미약하지만 더 안좋아질 것이다.
+그래서 아래와 같이 단순하게 코드를 수정할 수 있다.
+
+```js
+const dataExists = !loading && data.length != 0;
+```
+
+> Keep it simple, Stupid. (1960년에 미국 해군이 고안한 디자인 원리, KISS 원칙)
+
+물론, 아래의 코드처럼 정말 많은 연산이 필요할 경우에는 충분히 메모이제이션을 사용할 필요가 있다.
+
+```js
+function factorial(n) {
+  if (n == 0 || n == 1) return n;
+  return n * factorial(n - 1);
+}
+
+const bigNumber = useMemo(() => factorial(500), []);
+```
+
+## 이벤트 핸들러도 함수라는 것을 잊지 말자.
 
 작성중...
 
